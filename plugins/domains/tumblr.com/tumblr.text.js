@@ -1,0 +1,37 @@
+import * as cheerio from 'cheerio';
+
+export default {
+
+    re: 'tumblr.api',
+
+    getMeta: function (tumblr_post) {
+        if (tumblr_post.type == "text") {
+            return {
+                medium: 'article'
+            };
+        }
+    },
+
+
+    getLink: function (tumblr_post) {
+        if (tumblr_post.thumbnail_url || tumblr_post.type !== "text") {
+            return;
+        }
+
+        var $image = cheerio.load(tumblr_post.body)('img').first(); // Could be more than 1 image, true. But the response time will be unacceptable as post-processing will check all image sizes.
+
+        if ($image ) {
+            return {
+                href: $image.attr('src'),
+                title: $image.attr('alt'),
+                type: CONFIG.T.image,
+                rel: CONFIG.R.thumbnail
+            };
+        }
+    },
+
+    tests: [{skipMethods: ["getData"]},
+        "https://blog.slides.com/post/84828911898/slides-turns-one-year-old",
+        "https://butts-bouncing-on-the-beltway.tumblr.com/post/804116029629399040"
+    ]
+};
